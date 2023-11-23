@@ -39,6 +39,16 @@ func (d *Database) GetAllJobs() {
 	}
 }
 
+func (d *Database) Watch() {
+	ch := d.c.Watch(context.Background(), "job_", clientv3.WithPrefix())
+	go func(ch <-chan clientv3.WatchResponse) {
+		res := <-ch
+		for _, event := range res.Events {
+			log.Printf("%s\n", event.Kv.Value)
+		}
+	}(ch)
+}
+
 func (d *Database) Close() {
 	err := d.c.Close()
 	if err != nil {

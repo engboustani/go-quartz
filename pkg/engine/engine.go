@@ -50,6 +50,19 @@ var jobListCmd = &cobra.Command{
 	},
 }
 
+var jobTailCmd = &cobra.Command{
+	Use:   "tail [command]",
+	Short: "Get tail of jobs",
+	Long:  "Get tail of jobs scheduled",
+	Run: func(cmd *cobra.Command, args []string) {
+		database := database.Database{}
+		database.Connect()
+		defer database.Close()
+		database.Watch()
+		fmt.Scanln()
+	},
+}
+
 var eventCmd = &cobra.Command{
 	Use:   "event [command]",
 	Short: "Manage events",
@@ -91,5 +104,5 @@ func init() {
 	println()
 
 	rootCmd.AddCommand(jobCmd, eventCmd, commandCmd, runCmd)
-	jobCmd.AddCommand(jobListCmd)
+	jobCmd.AddCommand(jobListCmd, jobTailCmd)
 }
