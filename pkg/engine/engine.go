@@ -1,9 +1,13 @@
 package engine
 
 import (
+	"fmt"
 	"github.com/dimiro1/banner"
+	"github.com/engboustani/go-quartz/internal/database"
+	"github.com/engboustani/go-quartz/internal/schedule"
 	"github.com/mattn/go-colorable"
 	"github.com/spf13/cobra"
+	"log"
 )
 
 var rootCmd = &cobra.Command{
@@ -34,6 +38,18 @@ var jobCmd = &cobra.Command{
 	},
 }
 
+var jobListCmd = &cobra.Command{
+	Use:   "list [command]",
+	Short: "Get list of jobs",
+	Long:  "Get list of jobs scheduled",
+	Run: func(cmd *cobra.Command, args []string) {
+		database := database.Database{}
+		database.Connect()
+		defer database.Close()
+		database.GetAllJobs()
+	},
+}
+
 var eventCmd = &cobra.Command{
 	Use:   "event [command]",
 	Short: "Manage events",
@@ -52,6 +68,19 @@ var commandCmd = &cobra.Command{
 	},
 }
 
+var runCmd = &cobra.Command{
+	Use:   "run [command]",
+	Short: "Run quartz",
+	Long:  "Run quartz service",
+	Run: func(cmd *cobra.Command, args []string) {
+		log.Println("Run service")
+		schedule := schedule.Schedule{}
+		schedule.Init()
+		schedule.Start()
+		fmt.Scanln()
+	},
+}
+
 func init() {
 	template := `{{ .Title "quartz" "" 2 }}
 	{{ .AnsiColor.BrightWhite }}v1.0{{ .AnsiColor.Default }}
@@ -61,5 +90,6 @@ func init() {
 	banner.InitString(colorable.NewColorableStdout(), true, true, template)
 	println()
 
-	rootCmd.AddCommand(jobCmd, eventCmd, commandCmd)
+	rootCmd.AddCommand(jobCmd, eventCmd, commandCmd, runCmd)
+	jobCmd.AddCommand(jobListCmd)
 }
